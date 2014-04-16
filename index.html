@@ -15,7 +15,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
         <link rel="stylesheet" href="css/reveal.min.css">
-        <link rel="stylesheet" href="css/theme/default.css" id="theme">
+        <link rel="stylesheet" href="css/theme/solarized.css" id="theme">
 
         <!-- For syntax highlighting -->
         <link rel="stylesheet" href="lib/css/zenburn.css">
@@ -51,75 +51,82 @@
                 </section>
 
                 <section>
-                    <h2>The Pros and Cons of unit testing</h2>
-                    <p>
-                        Pros
+                    <section>
+                        <h2>The Pros and Cons of unit testing</h2>
+                        <p>Unit tests are simple to create and run, but they are not very good at mimicking real world complexity.</p>
+                        <p>They depend on developers to create all possible scenarios by hand.</p>
+
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>The Parts of a Unit Test</h2>
                         <ul>
-                            <li>Simple</li>
-                            <li>Fast to write</li>
-                            <li>Easy to learn and setup</li>
-                    </ul>
-                </p>
-                <p>
-                    Cons
-                    <ul>
-                        <li>Require lots of code</li>
-                        <li>Can be laborious to refactor</li>
-                        <li>Requires lots of creativity</li>
-                </ul>
-            </p>
+                            <li>Setup requisite mocks</li>
+                            <li>Insert data into item under test</li>
+                            <li>Assert against expected and actual results</li>
+                        </ul>
+                    </section>
+                </section>
 
-            <aside class="notes">
+                <section>
+                    <section>
+                        <h2>Generative Tests, a New Way</h2>
+                        <p>Generative tests introduce an element of randomness into unit testing.</p>
+                        <p>They depend on <strong>invariants</strong>, not expected data.</p>
+                    </section>
+                    <section>
+                        <h2>Parts of a Generative test</h2>
+                        <ul>
+                            <li>Setup required mocks</li>
+                            <li>Insert randomized data into item under test</li>
+                            <li>Assert that the result data has the correct <strong>properties</strong></li>
+                        </ul>
+                    </section>
+                </section>
 
-            </aside>
-        </section>
-
-        <section>
-            <section>
-                <h2>Example Time</h2>
-                <ul>
-                    <li>Performonce rewrite</li>
-                    <li>Good test coverage</li>
-                </ul>
-            </section>
-            <section>
-                <h2>The JS tests</h2>
-                <pre><code data-trim contenteditable>
-subject.refresh([
-    items[0],
-    items[1],
-    items[2],
-    items[3]
-]);
-subject.refresh([
-    items[3],
-    items[0],
-    items[1],
-    items[2]
-]);
-               </code></pre>
-                <p>See the problem?</p>
-            </section>
-            <section>
-                <h2>The Side Effects</h2>
-                <ul>
-                    <li>Passed unit tests</li>
-                    <li>Passed integration tests</li>
-                    <li>Accepted after human tests</li>
-                    <li>Failing only visible when other features written</li>
-                </ul>
-            </section>
-            <section>
-                <h2>What Could We Do?</h2>
-                <ul>
-                    <li>Not depend on human creativity</li>
-                    <li>Let machines deal with randomness</li>
-                    <li>Test more cases!</li>
-                </ul>
-            </section>
-            <section>
-                <h2>Generative Example</h2>
-                <pre><code data-trim contenteditable>
+                <section>
+                    <section>
+                        <h2>Example Time</h2>
+                        <p>The following example comes from the tracker codebase after a performance rewrite.</p>
+                        <p>A bug slipped through unit, integration, and manual testing.</p>
+                    </section>
+                    <section>
+                        <h2>The JS tests</h2>
+                        <pre><code data-trim contenteditable>
+beforeEach(function() {
+    items = createItems(3);
+    subject.reset([
+        items[0],
+        items[1],
+        items[2]
+    ]);
+    subject.on('reorder', reorderSpy);
+    subject.refresh([
+        items[1],
+        items[0],
+        items[2]
+    ]);
+});
+it("it should reorder itself", function() {
+    expect(subject.pluck('id')).toEqual([1, 0, 2]);
+});
+</code></pre>
+                        <p>See the problem?</p>
+                    </section>
+                    <section>
+                        <h2>What Could We Do?</h2>
+                        <ul>
+                            <li>Not depend on human creativity</li>
+                            <li>Let machines deal with randomness</li>
+                            <li>Test more cases!</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h2>Generative Example</h2>
+                        <pre><code data-trim contenteditable>
 (defspec sort-check 100
   (for-all [v (gen/not-empty (gen/vector gen/int))]
            (let [models (create-models v)
@@ -130,45 +137,54 @@ subject.refresh([
              (= sorted
                 (ids subject)))))
 
-                </code></pre>
-            </section>
-        </section>
-    </div>
+</code></pre>
+                        <p>This test would have caught the issue</p>
+                    </section>
+                </section>
 
-</div>
+                <section>
+                    <h2>Looking forward</h2>
+                    <p>Generative tests will never replace unit tests, but they can make a very good supplement.</p>
+                </section>
+                <section>
+                    <h1>Questions?</h1>
+                </section>
+            </div>
 
-<script src="lib/js/head.min.js"></script>
-<script src="js/reveal.min.js"></script>
+        </div>
 
-<script>
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.min.js"></script>
 
-    // Full list of configuration options available here:
-    // https://github.com/hakimel/reveal.js#configuration
-    Reveal.initialize({
-        controls: true,
-        progress: true,
-        history: true,
-        center: true,
+        <script>
 
-        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
-        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+            // Full list of configuration options available here:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
 
-        // Parallax scrolling
-        // parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
-        // parallaxBackgroundSize: '2100px 900px',
+                theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+                transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
 
-        // Optional libraries used to extend on reveal.js
-        dependencies: [
-            { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-            { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-            { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-            { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-            { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-            { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
-        ]
-    });
+                // Parallax scrolling
+                // parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+                // parallaxBackgroundSize: '2100px 900px',
 
-</script>
+                // Optional libraries used to extend on reveal.js
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
 
-</body>
+        </script>
+
+    </body>
 </html>
